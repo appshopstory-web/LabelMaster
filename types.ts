@@ -27,6 +27,14 @@ export interface GithubUser {
   html_url: string;
 }
 
+export interface AppUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar_url: string;
+  provider: 'google' | 'github';
+}
+
 export interface LabelConfig {
   width: number; // mm
   height: number; // mm

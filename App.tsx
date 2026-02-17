@@ -41,12 +41,14 @@ import {
   Terminal,
   Github,
   LogOut,
-  UserCircle
+  UserCircle,
+  ChromeIcon as GoogleIcon
 } from 'lucide-react';
-import { LabelConfig, DEFAULT_CONFIG, PrinterModel, NutritionItem, LabelStyle, SavedTemplate, GithubUser } from './types';
+import { LabelConfig, DEFAULT_CONFIG, PrinterModel, NutritionItem, LabelStyle, SavedTemplate, GithubUser, AppUser } from './types';
 import LabelPreview from './components/LabelPreview';
 import { improveLabelContent, generateNutritionTable } from './services/geminiService';
 import { supabase } from './lib/supabase';
+import { signInWithGoogle, signOut, getSession, onAuthStateChange } from './services/authService';
 
 interface ValidationError {
   field: string;
@@ -90,7 +92,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dims' | 'product' | 'company' | 'codes' | 'nutrition' | 'templates'>('dims');
   const [savedTemplates, setSavedTemplates] = useState<SavedTemplate[]>([]);
   const [newTemplateName, setNewTemplateName] = useState('');
-  const [githubUser, setGithubUser] = useState<GithubUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
@@ -154,14 +156,28 @@ const App: React.FC = () => {
       }
     }
 
-    const storedUser = localStorage.getItem('labelmaster_github_user');
-    if (storedUser) {
-      try {
-        setGithubUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Erro ao carregar usuário GitHub", e);
+    // Carregar sessão do Supabase
+    const loadSession = async () => {
+      const { user: sessionUser } = await getSession();
+      if (sessionUser) {
+        setUser(sessionUser);
       }
-    }
+    };
+
+    loadSession();
+
+    // Monitorar mudanças de autenticação
+    const unsubscribe = onAuthStateChange((authUser) => {
+      if (authUser) {
+        setUser(authUser);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -171,14 +187,6 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('labelmaster_templates', JSON.stringify(savedTemplates));
   }, [savedTemplates]);
-
-  useEffect(() => {
-    if (githubUser) {
-      localStorage.setItem('labelmaster_github_user', JSON.stringify(githubUser));
-    } else {
-      localStorage.removeItem('labelmaster_github_user');
-    }
-  }, [githubUser]);
 
   const updateConfig = (updates: Partial<LabelConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }));
