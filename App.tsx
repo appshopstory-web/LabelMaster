@@ -716,6 +716,17 @@ const App: React.FC = () => {
                   <input type="text" value={config.email} onChange={e => updateConfig({ email: e.target.value })} placeholder="Email" className="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
               </div>
+
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><Maximize2 size={16} /> Tamanho da Logo</h3>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-colors hover:border-blue-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-tight">Tamanho de Exibição</label>
+                    <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{config.logoDisplaySize}px</span>
+                  </div>
+                  <input type="range" min="20" max="150" step="5" value={config.logoDisplaySize} onChange={e => updateConfig({ logoDisplaySize: Number(e.target.value) })} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                </div>
+              </div>
             </div>
           )}
 

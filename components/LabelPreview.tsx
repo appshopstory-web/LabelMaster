@@ -37,11 +37,11 @@ const LabelPreview: React.FC<Props> = ({ config, id }) => {
     <img 
       src={config.logoUrl} 
       alt="Logo" 
-      style={{ width: `${config.logoWidth}px`, height: `${config.logoHeight}px` }} 
+      style={{ width: `${config.logoDisplaySize}px`, height: `${config.logoDisplaySize * 0.625}px` }} 
       className="object-contain shrink-0" 
     />
   ) : (
-    <div className="w-12 h-12 bg-slate-50 rounded flex items-center justify-center text-[7px] text-slate-400 border border-dashed border-slate-200 shrink-0">LOGO</div>
+    <div className="bg-slate-50 rounded flex items-center justify-center text-[7px] text-slate-400 border border-dashed border-slate-200 shrink-0" style={{ width: `${config.logoDisplaySize}px`, height: `${config.logoDisplaySize * 0.625}px` }}>LOGO</div>
   );
 
   const QR = (sizeOverride?: number) => config.qrCode ? <QRCodeSVG value={config.qrCode} size={sizeOverride || config.qrCodeSize} level="M" /> : null;

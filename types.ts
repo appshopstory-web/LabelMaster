@@ -54,6 +54,7 @@ export interface LabelConfig {
   logoUrl: string;
   logoWidth: number; // px
   logoHeight: number; // px
+  logoDisplaySize: number; // px - tamanho de exibição da logo
   qrCodeSize: number; // px
   paddingTop: number; // px
   paddingBottom: number; // px
@@ -92,6 +93,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
   logoUrl: '',
   logoWidth: 80,
   logoHeight: 50,
+  logoDisplaySize: 60,
   qrCodeSize: 42,
   paddingTop: 12,
   paddingBottom: 12,
