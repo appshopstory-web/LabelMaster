@@ -192,23 +192,27 @@ const App: React.FC = () => {
     setConfig(prev => ({ ...prev, ...updates }));
   };
 
-  const handleGitHubLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      const mockUsers = [
-        { login: 'label_pro_dev', name: 'Dev Master', avatar_url: 'https://github.com/identicons/jason.png', html_url: '#' },
-        { login: 'design_expert', name: 'Creative Mind', avatar_url: 'https://github.com/identicons/gabriel.png', html_url: '#' }
-      ];
-      const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-      setGithubUser(randomUser);
-      setIsLoading(false);
-      setShowAccountMenu(false);
-    }, 1200);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      console.error('Erro ao fazer login com Google:', error);
+      setDbError(`Erro de login: ${error.message}`);
+    }
+    setIsLoading(false);
   };
 
-  const handleLogout = () => {
-    setGithubUser(null);
-    setShowAccountMenu(false);
+  const handleLogout = async () => {
+    setIsLoading(true);
+    const { error } = await signOut();
+    if (error) {
+      console.error('Erro ao fazer logout:', error);
+      setDbError(`Erro ao fazer logout: ${error.message}`);
+    } else {
+      setUser(null);
+      setShowAccountMenu(false);
+    }
+    setIsLoading(false);
   };
 
   const addNutritionItem = () => {
