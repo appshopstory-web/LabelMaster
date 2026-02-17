@@ -613,6 +613,24 @@ const App: React.FC = () => {
                   <input type="number" value={config.height} onChange={e => updateConfig({ height: Number(e.target.value) })} className="w-full bg-white border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
               </div>
+
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><ArrowDown size={16} /> Margens</h3>
+                {[
+                  { label: 'Margem Superior', key: 'paddingTop' as const, min: 0, max: 50 },
+                  { label: 'Margem Inferior', key: 'paddingBottom' as const, min: 0, max: 50 },
+                  { label: 'Margem Esquerda', key: 'paddingLeft' as const, min: 0, max: 50 },
+                  { label: 'Margem Direita', key: 'paddingRight' as const, min: 0, max: 50 }
+                ].map(m => (
+                  <div key={m.key} className="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-colors hover:border-blue-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-tight">{m.label}</label>
+                      <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{(config[m.key] as number)}px</span>
+                    </div>
+                    <input type="range" min={m.min} max={m.max} step="1" value={(config[m.key] as number)} onChange={e => updateConfig({ [m.key]: Number(e.target.value) })} className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

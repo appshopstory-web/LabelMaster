@@ -27,8 +27,8 @@ const LabelPreview: React.FC<Props> = ({ config, id }) => {
     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
     fontFamily: 'sans-serif',
     paddingTop: `${config.paddingTop}px`,
-    paddingLeft: '12px',
-    paddingRight: '12px',
+    paddingLeft: `${config.paddingLeft}px`,
+    paddingRight: `${config.paddingRight}px`,
     paddingBottom: `${config.paddingBottom}px`,
     gap: `${config.internalSpacing}px`,
   };

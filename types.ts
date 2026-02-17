@@ -57,6 +57,8 @@ export interface LabelConfig {
   qrCodeSize: number; // px
   paddingTop: number; // px
   paddingBottom: number; // px
+  paddingLeft: number; // px
+  paddingRight: number; // px
   internalSpacing: number; // px
   productNameFontSize: number; // px
   globalFontSize: number; // px
@@ -93,6 +95,8 @@ export const DEFAULT_CONFIG: LabelConfig = {
   qrCodeSize: 42,
   paddingTop: 12,
   paddingBottom: 12,
+  paddingLeft: 10,
+  paddingRight: 10,
   internalSpacing: 8,
   productNameFontSize: 16,
   globalFontSize: 7,
