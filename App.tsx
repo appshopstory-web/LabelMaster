@@ -49,7 +49,6 @@ import LabelPreview from './components/LabelPreview';
 import LoginPage from './components/LoginPage';
 import { improveLabelContent, generateNutritionTable } from './services/geminiService';
 import { supabase } from './lib/supabase';
-import { signOut, getSession, onAuthStateChange } from './services/authService';
 
 interface ValidationError {
   field: string;
@@ -147,12 +146,19 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // Carrega a sessão ao iniciar
+    // Carrega a sessão simples ao iniciar
     const loadSession = async () => {
       try {
-        const { user: sessionUser } = await getSession();
-        if (sessionUser) {
-          setUser(sessionUser);
+        // Tenta carregar do localStorage primeiro
+        const savedEmail = localStorage.getItem('user_email');
+        if (savedEmail) {
+          setUser({
+            id: 'local-' + savedEmail,
+            email: savedEmail,
+            name: savedEmail.split('@')[0],
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${savedEmail}`,
+            provider: 'email'
+          });
         }
       } catch (err) {
         console.error("Erro ao carregar sessão:", err);
@@ -162,19 +168,6 @@ const App: React.FC = () => {
     };
 
     loadSession();
-
-    // Monitora mudanças de autenticação
-    const unsubscribe = onAuthStateChange((authUser) => {
-      if (authUser) {
-        setUser(authUser);
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
   }, []);
 
   // Carrega templates quando usuário muda
@@ -207,15 +200,16 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     setIsLoading(true);
-    const { error } = await signOut();
-    if (error) {
-      console.error('Erro ao fazer logout:', error);
-      setDbError(`Erro ao fazer logout: ${error.message}`);
-    } else {
+    try {
+      // Remove autenticação local
+      localStorage.removeItem('user_email');
       setUser(null);
       setShowAccountMenu(false);
+    } catch (err) {
+      console.error('Erro ao fazer logout:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const addNutritionItem = () => {
@@ -401,7 +395,19 @@ const App: React.FC = () => {
 
   // Se não está autenticado, mostra página de login
   if (!user) {
-    return <LoginPage onLoginSuccess={() => {}} />;
+    return (
+      <LoginPage
+        onLoginSuccess={(email) => {
+          setUser({
+            id: 'local-' + email,
+            email: email,
+            name: email.split('@')[0],
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+            provider: 'email'
+          });
+        }}
+      />
+    );
   }
 
   // Renderiza a aplicação completa
@@ -487,7 +493,7 @@ const App: React.FC = () => {
         {/* Scroll apenas nesta área de ferramentas */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative z-10">
           {activeTab === 'templates' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-6">
               {dbError && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-start gap-3 mb-3">
@@ -517,8 +523,8 @@ const App: React.FC = () => {
 
               <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 shadow-inner">
                 <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2 mb-3 uppercase tracking-wider">
-                  {githubUser ? (
-                    <img src={githubUser.avatar_url} className="w-5 h-5 rounded-full" />
+                  {user ? (
+                    <img src={user.avatar_url} className="w-5 h-5 rounded-full" />
                   ) : (
                     <Cloud size={16} />
                   )}
@@ -569,7 +575,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'dims' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-4">
               <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><Palette size={16} /> Identidade Visual</h3>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {Object.values(LabelStyle).map(style => (
@@ -611,7 +617,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'product' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-4">
               <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><FontIcon size={16} /> Dados do Produto</h3>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Nome de Venda</label>
@@ -640,7 +646,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'nutrition' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><TableIcon size={16} /> Tabela Nutricional</h3>
                 <button disabled={isLoading} onClick={handleAIGenerateNutrition} className="text-blue-600 hover:text-blue-700 text-[10px] font-bold flex items-center gap-2 bg-blue-50 px-4 py-1.5 rounded-full border border-blue-100 shadow-sm active:scale-95 transition-all">
@@ -666,7 +672,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'company' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-4">
               <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><Building2 size={16} /> Branding da Empresa</h3>
               <div className="flex items-center gap-6 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
                 <div className="relative group">
@@ -696,7 +702,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'codes' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="space-y-4">
               <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2 uppercase tracking-wider"><BarcodeIcon size={16} /> Identificadores</h3>
               
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 hover:border-blue-200 transition-colors shadow-sm">
@@ -752,7 +758,7 @@ const App: React.FC = () => {
           <LabelPreview config={config} id="printable-area" />
         </div>
 
-        <div className="mt-12 bg-white/40 backdrop-blur-xl px-8 py-5 rounded-3xl border border-white/40 shadow-xl print:hidden max-w-lg text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mt-12 bg-white/40 backdrop-blur-xl px-8 py-5 rounded-3xl border border-white/40 shadow-xl print:hidden max-w-lg text-center">
           <h4 className="text-sm font-black text-slate-800 mb-2 uppercase tracking-tight flex items-center justify-center gap-2"><Printer size={16} /> Configurações de Impressão</h4>
           <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
             Impressora: <span className="text-blue-600 font-bold">{config.width}x{config.height}mm</span>. 

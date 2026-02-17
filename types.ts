@@ -32,7 +32,7 @@ export interface AppUser {
   email: string;
   name: string;
   avatar_url: string;
-  provider: 'google' | 'github';
+  provider: 'google' | 'github' | 'email';
 }
 
 export interface LabelConfig {
